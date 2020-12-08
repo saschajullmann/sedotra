@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - ./scripts/db:/docker-entrypoint-initdb.d
+    env_file:
+      - .env-dev
+    ports:
+      - 5432:5432
+  backend:
+    build:
+      context: ./backend
+      dockerfile: backend.dockerfile
+      args:
+        INSTALL_DEV: "true"
+    command: "/app/start-dev.sh"
+    volumes:
+      - "./backend/app/:/app"
+    ports:
+      - 5000:5000
+    depends_on:
+      - db
+    env_file:
+      - .env-dev
