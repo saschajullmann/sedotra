@@ -10,7 +10,9 @@ from app.core.config import settings
 from app.main import app
 from app.db import base
 from app.models import Team, User
+from app.models.dataroom import Dataroom
 from app.schemas import UserCreate
+from app.schemas.dataroom import DataRoomCreate
 from app.schemas.team import TeamCreate
 
 
@@ -53,3 +55,11 @@ def normal_user(db: Session) -> Dict[str, str]:
     password = "my_password"
     user_in = UserCreate(email=email, password=password, is_superuser=False)
     return crud.user.create(db, obj_in=user_in)
+
+
+@pytest.fixture(scope="module")
+def dataroom(db: Session, team: Team, normal_user: User) -> Dataroom:
+    dataroom_in = DataRoomCreate(
+        name="Test Room", created_by=normal_user.id, team_fk=team.id
+    )
+    return crud.dataroom.create(db, obj_in=dataroom_in)
