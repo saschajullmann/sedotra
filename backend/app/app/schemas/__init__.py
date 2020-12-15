@@ -7,5 +7,6 @@ from .dataroom import (
     DataRoomCreateRequest,
     DataRoomCreate,
     DataRoomUpdate,
-    DataRoomInDBBase
+    DataRoomInDBBase,
 )
+from .document import DocumentCreate, DocumentUpdate, DocumentInDB
