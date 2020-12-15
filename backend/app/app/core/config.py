@@ -80,6 +80,12 @@ class Settings(BaseSettings):
     EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
     USERS_OPEN_REGISTRATION: bool = False
 
+    # OBJECT STORAGE ACCESS
+    OBJECT_ACCESS_KEY: str
+    OBJECT_SECRET_KEY: str
+    OBJECT_BUCKET: str
+    OBJECT_ENDPOINT: AnyHttpUrl
+
     class Config:
         case_sensitive = True
 
