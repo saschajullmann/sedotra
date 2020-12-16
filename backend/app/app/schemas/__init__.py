@@ -9,4 +9,10 @@ from .dataroom import (
     DataRoomUpdate,
     DataRoomInDBBase,
 )
-from .document import DocumentCreate, DocumentUpdate, DocumentInDB
+from .document import (
+    DocumentCreate,
+    DocumentUpdate,
+    DocumentInDB,
+    DocumentCreateRequest,
+    DocumentResponse,
+)
