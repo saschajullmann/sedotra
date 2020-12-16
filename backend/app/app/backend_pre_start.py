@@ -3,7 +3,7 @@ import logging
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
 
 from app.db.session import SessionLocal
-from app.object_storage.client import client
+from app.object_storage import ObjectStorage
 from app.core.config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -39,9 +39,8 @@ def init_db() -> None:
 )
 def init_object() -> None:
     try:
-        client.list_objects_v2(
-            Bucket=settings.OBJECT_BUCKET,
-        )
+        client = ObjectStorage()
+        client.list_objects()
     except Exception as e:
         logger.error(e)
         raise e
