@@ -14,7 +14,9 @@ def test_create_document(db: Session, normal_user: User, dataroom: Dataroom) -> 
     """
     obj_in = DocumentCreate(
         name="Test Doc",
-        file_name="hello.txt",
+        file_name="hello",
+        extension="txt",
+        mime_type="text/plain",
         md5_sum="87a6909ab71ec463f013325dbf9f3523",
         size=466730,
         dataroom_fk=dataroom.id,
