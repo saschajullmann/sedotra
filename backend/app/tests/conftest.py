@@ -9,9 +9,9 @@ from app import crud
 from app.core.config import settings
 from app.main import app
 from app.db import base
-from app.models import Team, User
-from app.models.dataroom import Dataroom
-from app.schemas import UserCreate
+from app.models import Team, User, Document, Dataroom
+from app.object_storage import ObjectStorage
+from app.schemas import UserCreate, DocumentCreate
 from app.schemas.dataroom import DataRoomCreate
 from app.schemas.team import TeamCreate
 
@@ -19,6 +19,14 @@ from app.schemas.team import TeamCreate
 engine = create_engine(settings.SQLALCHEMY_DATABASE_TEST_URI, pool_pre_ping=True)
 ScopedSession = scoped_session(sessionmaker(bind=engine))
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+@pytest.fixture(scope="module")
+def object_storage() -> Generator:
+    # instantiate ObjectStorage class with
+    # testing bucket (testing bucket needs to be
+    # created by hand)
+    yield ObjectStorage(bucket="sedotra-test")
 
 
 @pytest.fixture(scope="module")
@@ -63,3 +71,18 @@ def dataroom(db: Session, team: Team, normal_user: User) -> Dataroom:
         name="Test Room", created_by=normal_user.id, team_fk=team.id
     )
     return crud.dataroom.create(db, obj_in=dataroom_in)
+
+
+@pytest.fixture(scope="module")
+def document(db: Session, dataroom: Dataroom, normal_user: User) -> Document:
+    obj_in = DocumentCreate(
+        name="Test Doc",
+        file_name="hello",
+        extension="txt",
+        mime_type="text/plain",
+        md5_sum="87a6909ab71ec463f013325dbf9f3523",
+        size=466730,
+        dataroom_fk=dataroom.id,
+        created_by=normal_user.id,
+    )
+    return crud.document.create(db, obj_in=obj_in)
