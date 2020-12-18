@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app import crud
-from app.models import Dataroom
+from app.models import Dataroom, Document
 from app.models.user import User
 from app.schemas import DocumentCreate
 
@@ -26,3 +26,16 @@ def test_create_document(db: Session, normal_user: User, dataroom: Dataroom) -> 
 
     assert metadata.is_deleted is False
     assert metadata.is_uploaded is False
+
+
+def test_mark_document_as_uploaded(
+    db: Session, normal_user: User, document: Document
+) -> None:
+    """
+    GIVEN an existing not yet uploaded document
+    WHEN the "mark_as_uploaded" function is called
+    THEN the document should be marked as uploaded in db
+    """
+    assert document.is_uploaded is False
+    new_obj = crud.document.mark_as_uploaded(db, document_id=document.id)
+    assert new_obj.is_uploaded is True

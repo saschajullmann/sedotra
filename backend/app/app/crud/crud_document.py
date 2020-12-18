@@ -8,7 +8,13 @@ from app.schemas.document import DocumentCreate, DocumentUpdate
 
 
 class CRUDDocument(CRUDBase[Document, DocumentCreate, DocumentUpdate]):
-    pass
+    def mark_as_uploaded(self, db: Session, *, document_id: UUID) -> Document:
+        db_obj: Document = db.query(Document).filter(Document.id == document_id).first()
+        db_obj.is_uploaded = True
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
 
 
 document = CRUDDocument(Document)

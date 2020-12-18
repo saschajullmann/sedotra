@@ -8,6 +8,10 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.object_storage import ObjectStorage
+from app.utils import (
+    verify_document_is_uploaded_token,
+    generate_document_is_uploaded_token,
+)
 
 router = APIRouter()
 
@@ -157,9 +161,41 @@ def create_document(
 
     doc_schema = schemas.DocumentInDB.from_orm(document)
 
+    mark_as_uploaded_token = generate_document_is_uploaded_token(str(document.id))
+
     response_object = {
         "document": doc_schema,
         "upload_url": url_objects["url"],
         "upload_form_fields": url_objects["fields"],
+        "mark_as_uploaded_url": mark_as_uploaded_token,
     }
     return schemas.DocumentResponse(**response_object)
+
+
+@router.patch(
+    "/documents/{document_id}/mark_as_uploaded",
+)
+def mark_document_as_uploaded(
+    token: str,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    db: Session = Depends(deps.get_db),
+    client: ObjectStorage = Depends(deps.get_object_client),
+):
+    """
+    A document can only be marked as uploaded by the
+    person that created the document and
+    if it exists in the object_storage
+    hence we need to check whether the key exists
+    in the object_storage
+    """
+    document_id = verify_document_is_uploaded_token(token)
+    if not document_id:
+        raise HTTPException(status_code=400, detail="Invalid token")
+
+    # check if key exists
+    if not client.does_key_exist(document_id):
+        raise HTTPException(status_code=400, detail="Document does not exist")
+
+    document = crud.document.mark_as_uploaded(db, document_id=document_id)
+
+    return {"msg": "Marked successfully"}

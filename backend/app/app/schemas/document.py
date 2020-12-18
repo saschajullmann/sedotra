@@ -40,3 +40,4 @@ class DocumentResponse(BaseModel):
     document: DocumentInDB
     upload_url: str
     upload_form_fields: Dict
+    mark_as_uploaded_url: str
