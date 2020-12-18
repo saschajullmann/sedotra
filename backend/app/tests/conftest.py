@@ -1,4 +1,6 @@
+import os
 import pytest
+from tempfile import NamedTemporaryFile
 from typing import Dict, Generator
 
 from fastapi.testclient import TestClient
@@ -26,7 +28,10 @@ def object_storage() -> Generator:
     # instantiate ObjectStorage class with
     # testing bucket (testing bucket needs to be
     # created by hand)
-    yield ObjectStorage(bucket="sedotra-test")
+    object_storage = ObjectStorage(bucket="sedotra-test")
+    object_storage._client.create_bucket(Bucket=object_storage.bucket)
+    yield object_storage
+    object_storage._client.delete_bucket(Bucket=object_storage.bucket)
 
 
 @pytest.fixture(scope="module")
@@ -76,13 +81,27 @@ def dataroom(db: Session, team: Team, normal_user: User) -> Dataroom:
 @pytest.fixture(scope="module")
 def document(db: Session, dataroom: Dataroom, normal_user: User) -> Document:
     obj_in = DocumentCreate(
-        name="Test Doc",
-        file_name="hello",
+        name="Test Document",
+        file_name="test_doc",
         extension="txt",
         mime_type="text/plain",
-        md5_sum="87a6909ab71ec463f013325dbf9f3523",
+        md5_sum="87a6909ab71ec463f013325dbf9f3545",
         size=466730,
         dataroom_fk=dataroom.id,
         created_by=normal_user.id,
     )
     return crud.document.create(db, obj_in=obj_in)
+
+
+@pytest.fixture(scope="module")
+def key(object_storage: ObjectStorage) -> Generator:
+    random_file = "random_file.txt"
+    with open(random_file, "w") as file:
+        file.write("Blah blah")
+
+    object_storage._client.upload_file(
+        file.name, Bucket=object_storage.bucket, Key=file.name
+    )
+    yield file.name
+    os.remove(random_file)
+    object_storage._client.delete_object(Bucket=object_storage.bucket, Key=file.name)

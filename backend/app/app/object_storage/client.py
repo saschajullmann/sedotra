@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import boto3
 from botocore.client import Config
+from botocore.exceptions import ClientError
 from app.core.config import settings
 from app.models import Document
 
@@ -37,3 +38,13 @@ class ObjectStorage:
             self.bucket, doc.key, ExpiresIn=300, Fields=fields
         )
         return url
+
+    def does_key_exist(self, key: str) -> bool:
+        try:
+            self._client.head_object(Bucket=self.bucket, Key=key)
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "404":
+                # The object does not exist.
+                return False
+        else:
+            return True

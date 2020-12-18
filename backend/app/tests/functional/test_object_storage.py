@@ -13,3 +13,15 @@ def test_object_storage_url(object_storage: ObjectStorage, document: Document) -
     assert "fields" in url_object
     assert url_object["fields"]["Content-MD5"] == document.md5
     assert url_object["fields"]["Content-Type"] == document.mime_type
+
+
+def test_object_storage_key_exists_false(object_storage: ObjectStorage) -> None:
+    response = object_storage.does_key_exist("random_object.txt")
+    assert response is False
+
+
+def test_object_storage_key_exists_true(
+    object_storage: ObjectStorage, key: str
+) -> None:
+    response = object_storage.does_key_exist(key)
+    assert response is True
