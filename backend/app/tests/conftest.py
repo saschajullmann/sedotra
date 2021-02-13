@@ -1,5 +1,6 @@
 import os
 import pytest
+import time
 from tempfile import NamedTemporaryFile
 from typing import Dict, Generator
 
@@ -10,6 +11,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session, Session
 from app import crud
 from app.core.config import settings
 from app.main import app
+from app.api.deps import get_db
 from app.db import base
 from app.models import Team, User, Document, Dataroom
 from app.object_storage import ObjectStorage
@@ -46,7 +48,20 @@ def db() -> Generator:
 
 
 @pytest.fixture(scope="module")
-def client() -> Generator:
+def client(db) -> Generator:
+    """
+    The test client needs the same database access
+    as the rest of the fixtures so that the test db
+    can be prepared before the client accesses the data
+    """
+
+    def override_get_db():
+        try:
+            yield db
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
         yield c
 
@@ -120,8 +135,6 @@ def user_authentication_headers(
 
     r = client.post(f"{settings.API_V1_STR}/login/access-token", data=data)
     response = r.json()
-    print("HIER DIE RESPONSE: ", response)
-    print("HIER DIE EMAIL: ", normal_user.email)
     auth_token = response["access_token"]
     headers = {"Authorization": f"Bearer {auth_token}"}
     return headers

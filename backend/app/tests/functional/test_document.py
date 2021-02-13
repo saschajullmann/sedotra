@@ -1,3 +1,8 @@
+import os
+import time
+import hashlib
+import mimetypes
+import requests
 from sqlalchemy.orm import Session
 from fastapi.testclient import TestClient
 from app import crud
@@ -55,18 +60,58 @@ def test_document_creation(
     To marking a file as uploaded
     """
 
-    # First the user needs to create the document in db
-    new_document_request = {
-        "name": "My Test Document",
-        "file_name": "my_test_doc.txt",
-        "md5_sum": "226fd09401d3799e3f1c164a08ae5c43",
-        "size": 45,
-        "mime_type": "text/plain",
-    }
+    # Read in test document from disk
+    with open("./tests/data/my_test_doc.txt", "r", encoding="utf-8") as test_doc:
+        doc_contents = test_doc.read().encode("utf-8")
 
-    response = client.post(
-        f"{settings.API_V1_STR}/teams/{dataroom.team_fk}/datarooms/{dataroom.id}/documents",
-        headers=user_authentication_headers,
-        json=new_document_request,
-    )
-    assert response.status_code == 200
+        # calculate md5 sum of documents contents
+        md5_hash = hashlib.md5()
+        md5_hash.update(doc_contents)
+        digest = md5_hash.hexdigest().encode("utf-8")
+        md5_string = digest.decode("utf-8")
+
+        # make api request to create new document
+        file_name = os.path.basename(test_doc.name)
+        new_document_request = {
+            "name": "My Test Document",
+            "file_name": file_name,
+            "md5_sum": md5_string,
+            "size": 45,
+            "mime_type": "text/plain",
+        }
+
+        response = client.post(
+            f"{settings.API_V1_STR}/teams/{dataroom.team_fk}/datarooms/{dataroom.id}/documents",
+            headers=user_authentication_headers,
+            json=new_document_request,
+        )
+        assert response.status_code == 200
+
+        # grab urls and tokens for subsequent requests
+        response_data = response.json()
+        document_id = response_data["document"]["id"]
+        upload_payload = response_data["upload_form_fields"]
+        upload_url = response_data["upload_url"]
+        mark_as_uploaded_url = response_data["mark_as_uploaded_url"]
+        mark_as_uploaded_token = response_data["mark_as_uploaded_token"]
+        files = {"file": doc_contents}
+
+        # upload file to object storage
+        r = requests.post(url=upload_url, data=upload_payload, files=files)
+
+        assert r.status_code == 204
+
+        mark_as_uploaded_payload = {"token": mark_as_uploaded_token}
+
+        # mark file as uploaded
+        response = client.patch(
+            mark_as_uploaded_url,
+            headers=user_authentication_headers,
+            params=mark_as_uploaded_payload,
+        )
+        assert response.status_code == 200
+
+        # verify that document was indeed marked as uploaded
+        db_document = crud.document.get(db, document_id)
+
+        assert db_document.is_uploaded
