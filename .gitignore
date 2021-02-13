@@ -131,3 +131,6 @@ dmypy.json
 
 # VS Code folder
 .vscode
+
+# ignore frontend folder for now
+frontend

@@ -1,3 +1,3 @@
 #!/bin/zsh
 
-docker-compose exec backend pytest
+docker-compose exec backend pytest -rP

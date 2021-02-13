@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Any
 
 from fastapi import Depends, HTTPException, status
 from pydantic import ValidationError
@@ -10,6 +10,7 @@ from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
+from app.object_storage import ObjectStorage
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -22,6 +23,14 @@ def get_db() -> Generator:
         yield db
     finally:
         db.close()
+
+
+def get_object_client() -> Generator:
+    try:
+        client = ObjectStorage()
+        yield client
+    finally:
+        pass
 
 
 def get_current_user(

@@ -1,9 +1,8 @@
 #!/bin/bash
 # wait for DB
 
-while ! nc -z db 5432; do
-  sleep 0.1
-done
+# initial checks first
+python /app/app/backend_pre_start.py
 
 alembic upgrade head
 
