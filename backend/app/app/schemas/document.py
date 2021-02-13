@@ -41,3 +41,4 @@ class DocumentResponse(BaseModel):
     upload_url: str
     upload_form_fields: Dict
     mark_as_uploaded_url: str
+    mark_as_uploaded_token: str

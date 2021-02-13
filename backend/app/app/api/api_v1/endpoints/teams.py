@@ -1,7 +1,7 @@
 from typing import Any, List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -116,12 +116,13 @@ def get_datarooms_per_team(
     return datarooms
 
 
-### DOCUMENT ROUTES ###
+# DOCUMENT ROUTES ###
 @router.post(
     "/{team_id}/datarooms/{dataroom_id}/documents",
     response_model=schemas.DocumentResponse,
 )
 def create_document(
+    request: Request,
     team_id: UUID,
     dataroom_id: UUID,
     document_request: schemas.DocumentCreateRequest,
@@ -163,11 +164,17 @@ def create_document(
 
     mark_as_uploaded_token = generate_document_is_uploaded_token(str(document.id))
 
+    url_for_mark_as_uploaded_url = request.url_for(
+        "mark_document_as_uploaded",
+        **{"document_id": document.id},
+    )
+
     response_object = {
         "document": doc_schema,
         "upload_url": url_objects["url"],
         "upload_form_fields": url_objects["fields"],
-        "mark_as_uploaded_url": mark_as_uploaded_token,
+        "mark_as_uploaded_url": url_for_mark_as_uploaded_url,
+        "mark_as_uploaded_token": mark_as_uploaded_token,
     }
     return schemas.DocumentResponse(**response_object)
 
