@@ -1,8 +1,8 @@
 """added role models and organization model
 
-Revision ID: 12097b531aac
+Revision ID: d11266229bcf
 Revises: e461feb811d5
-Create Date: 2021-02-16 06:22:00.685319
+Create Date: 2021-02-16 06:29:37.816314
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '12097b531aac'
+revision = 'd11266229bcf'
 down_revision = 'e461feb811d5'
 branch_labels = None
 depends_on = None
@@ -51,7 +51,7 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('name', sa.String(), nullable=True),
-    sa.Column('team_id', sa.Integer(), nullable=True),
+    sa.Column('team_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('dataroom_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.ForeignKeyConstraint(['dataroom_id'], ['dataroom.id'], ),
