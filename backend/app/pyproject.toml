@@ -18,6 +18,8 @@ emails = "^0.6"
 python-multipart = "^0.0.5"
 boto3 = "^1.16.36"
 tenacity = "^6.3.0"
+oso = "^0.10.1"
+sqlalchemy-oso = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

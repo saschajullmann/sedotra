@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session, Session
 
 from app import crud
 from app.core.config import settings
+from app.authorization.oso import init_oso
 from app.main import app
 from app.api.deps import get_db
 from app.db import base
@@ -45,6 +46,12 @@ def db() -> Generator:
     yield ScopedSession()
     ScopedSession().close()
     base.Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(scope="module")
+def oso(db) -> Generator:
+    oso_client = init_oso(db)
+    yield oso_client
 
 
 @pytest.fixture(scope="module")

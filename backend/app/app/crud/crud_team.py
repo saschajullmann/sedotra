@@ -1,6 +1,4 @@
-from typing import Any
 from sqlalchemy.orm import Session
-from uuid import UUID
 
 from app.crud.base import CRUDBase
 from app.models.team import Team
@@ -22,13 +20,6 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamUpdate]):
         db.commit()
         db.refresh(db_obj)
         return db_obj
-
-    def add_user(self, db: Session, *, team_id: UUID, user_id: UUID) -> Any:
-        user_to_add = db.query(User).filter_by(id=user_id).first()
-        team = db.query(Team).filter_by(id=team_id).first()
-        user_to_add.teams.append(team)
-        db.add(user_to_add)
-        db.commit()
 
 
 team = CRUDTeam(Team)

@@ -12,5 +12,7 @@ class Dataroom(Base):
     is_active = Column(Boolean(), nullable=False, default=True)
     created_by = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     creator = relationship("User")
-    team_fk = Column(UUID(as_uuid=True), ForeignKey("team.id"), nullable=False)
-    team = relationship("Team")
+    organization_fk = Column(
+        UUID(as_uuid=True), ForeignKey("organization.id"), nullable=False
+    )
+    organization = relationship("Organization")

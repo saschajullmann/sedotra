@@ -12,3 +12,7 @@ class Team(Base):
     is_active = Column(Boolean(), nullable=False, default=True)
     created_by = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     creator = relationship("User")
+    organization_fk = Column(
+        UUID(as_uuid=True), ForeignKey("organization.id"), nullable=False
+    )
+    organization = relationship("Organization")
