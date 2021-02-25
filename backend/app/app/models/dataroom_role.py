@@ -10,7 +10,7 @@ DataRoomRoleMixin = resource_role_class(
     declarative_base=Base,
     user_model=User,
     resource_model=Dataroom,
-    role_choices=["OWNER", "ADMIN", "MEMBER", "GUEST"],
+    role_choices=["OWNER", "ADMIN", "MEMBER", "GUEST_WRITE", "GUEST_READ"],
 )
 
 

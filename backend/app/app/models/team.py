@@ -1,6 +1,8 @@
 from sqlalchemy import Boolean, Column, String, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+from .user import User
+from .organization import Organization
 
 from app.db.base_class import Base
 
@@ -16,3 +18,17 @@ class Team(Base):
         UUID(as_uuid=True), ForeignKey("organization.id"), nullable=False
     )
     organization = relationship("Organization")
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        is_active: bool,
+        creator: User,
+        organization: Organization,
+    ):
+        self.name = name
+        self.description = description
+        self.is_active = is_active
+        self.creator = creator
+        self.organization = organization
