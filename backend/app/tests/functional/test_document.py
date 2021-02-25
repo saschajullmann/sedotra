@@ -1,7 +1,5 @@
 import os
-import time
 import hashlib
-import mimetypes
 import requests
 from sqlalchemy.orm import Session
 from fastapi.testclient import TestClient
@@ -9,7 +7,7 @@ from app import crud
 from app.core.config import settings
 from app.models import Dataroom, Document
 from app.models.user import User
-from app.schemas import DocumentCreate, DocumentCreateRequest
+from app.schemas import DocumentCreate
 
 
 def test_create_document(db: Session, normal_user: User, dataroom: Dataroom) -> None:
@@ -26,8 +24,8 @@ def test_create_document(db: Session, normal_user: User, dataroom: Dataroom) -> 
         mime_type="text/plain",
         md5_sum="87a6909ab71ec463f013325dbf9f3523",
         size=466730,
-        dataroom_fk=dataroom.id,
-        created_by=normal_user.id,
+        dataroom=dataroom,
+        creator=normal_user,
     )
     metadata = crud.document.create(db, obj_in=obj_in)
 
@@ -35,9 +33,7 @@ def test_create_document(db: Session, normal_user: User, dataroom: Dataroom) -> 
     assert metadata.is_uploaded is False
 
 
-def test_mark_document_as_uploaded(
-    db: Session, normal_user: User, document: Document
-) -> None:
+def test_mark_document_as_uploaded(db: Session, document: Document) -> None:
     """
     GIVEN an existing not yet uploaded document
     WHEN the "mark_as_uploaded" function is called
@@ -81,10 +77,11 @@ def test_document_creation(
         }
 
         response = client.post(
-            f"{settings.API_V1_STR}/teams/{dataroom.team_fk}/datarooms/{dataroom.id}/documents",
+            f"{settings.API_V1_STR}/orgs/{dataroom.organization_fk}/datarooms/{dataroom.id}/documents",
             headers=user_authentication_headers,
             json=new_document_request,
         )
+
         assert response.status_code == 200
 
         # grab urls and tokens for subsequent requests
