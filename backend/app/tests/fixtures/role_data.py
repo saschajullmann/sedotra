@@ -3,11 +3,14 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 from app.models import (
     User,
+    Team,
     Organization,
     Dataroom,
     Document,
 )
 from sqlalchemy_oso import roles as oso_roles
+
+from app.models.dataroom_role import DataRoomRole
 
 
 @dataclass
@@ -18,9 +21,11 @@ class Data:
     member_user_room_1: User
     guest_read_user_room_1: User
     guest_write_user_room_1: User
+    member_team_1: User
     admin_user_room_1: User
     first_org: Organization
     second_org: Organization
+    team_1: Team
     room_1: Dataroom
     room_2: Dataroom
     document_room_1: Document
@@ -48,6 +53,12 @@ def load_role_fixtures(db: Session):
         first_name="Member",
         last_name="User",
         email="member_room1@org1.com",
+        hashed_password="hash",
+    )
+    member_team_1 = User(
+        first_name="Member",
+        last_name="Team",
+        email="member_team1@org1.com",
         hashed_password="hash",
     )
     lead_user_org_1 = User(
@@ -78,6 +89,7 @@ def load_role_fixtures(db: Session):
         admin_user_org_1,
         member_user_org_1,
         member_user_room_1,
+        member_team_1,
         lead_user_org_1,
         guest_read_user_room_1,
         guest_write_user_room_1,
@@ -96,6 +108,18 @@ def load_role_fixtures(db: Session):
     oso_roles.add_user_role(db, member_user_org_1, first_org, "MEMBER")
     oso_roles.add_user_role(db, lead_user_org_1, first_org, "LEAD")
 
+    team_1 = Team(
+        name="Team1",
+        description="This is a team",
+        is_active=True,
+        creator=admin_user_org_1,
+        organization=first_org,
+    )
+    teams = [team_1]
+
+    db.add_all(teams)
+    oso_roles.add_user_role(db, member_team_1, team_1, "MEMBER")
+
     room_1 = Dataroom(
         name="FirstRoom",
         description="First room",
@@ -109,6 +133,17 @@ def load_role_fixtures(db: Session):
         creator=lead_user_org_1,
         organization=first_org,
     )
+
+    rooms = [room_1, room_2]
+
+    db.add_all(rooms)
+
+    # create a dataroom role for team_1
+    team_1_dataroom_role = DataRoomRole(
+        name="MEMBER", dataroom=room_1, team=team_1
+    )  # type: ignore
+
+    db.add(team_1_dataroom_role)
 
     document_room_1 = Document(
         name="Test Document",
@@ -142,11 +177,8 @@ def load_role_fixtures(db: Session):
     oso_roles.add_user_role(db, guest_read_user_room_1, room_1, "GUEST_READ")
     oso_roles.add_user_role(db, guest_write_user_room_1, room_1, "GUEST_WRITE")
 
-    rooms = [room_1, room_2]
-
     documents = [document_room_1, document_room_2]
 
-    db.add_all(rooms)
     db.add_all(documents)
 
     db.commit()
@@ -156,6 +188,9 @@ def load_role_fixtures(db: Session):
 
     for org in organizations:
         db.refresh(org)
+
+    for team in teams:
+        db.refresh(team)
 
     for room in rooms:
         db.refresh(room)
@@ -167,12 +202,14 @@ def load_role_fixtures(db: Session):
         admin_user_org_1=admin_user_org_1,
         member_user_org_1=member_user_org_1,
         member_user_room_1=member_user_room_1,
+        member_team_1=member_team_1,
         lead_user_org_1=lead_user_org_1,
         guest_read_user_room_1=guest_read_user_room_1,
         guest_write_user_room_1=guest_write_user_room_1,
         admin_user_room_1=admin_user_room_1,
         first_org=first_org,
         second_org=second_org,
+        team_1=team_1,
         room_1=room_1,
         room_2=room_2,
         document_room_1=document_room_1,
