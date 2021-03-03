@@ -1,31 +1,30 @@
 import os
 import pytest
-import time
-from tempfile import NamedTemporaryFile
 from typing import Dict, Generator
 
+from oso import Oso
+from sqlalchemy_oso import roles as oso_roles
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session, Session
+from sqlalchemy.orm import sessionmaker, Session, close_all_sessions
 
 from app import crud
 from app.core.config import settings
+from app.authorization.oso import init_oso
 from app.main import app
 from app.api.deps import get_db
 from app.db import base
-from app.models import Team, User, Document, Dataroom
+from app.models import Team, User, Document, Dataroom, Organization
 from app.object_storage import ObjectStorage
-from app.schemas import UserCreate, DocumentCreate
+from app.schemas import UserCreate, DocumentCreate, OrgCreate
 from app.schemas.dataroom import DataRoomCreate
-from app.schemas.team import TeamCreate
+from .fixtures.role_data import load_role_fixtures, Data
 
-
-engine = create_engine(settings.SQLALCHEMY_DATABASE_TEST_URI, pool_pre_ping=True)
-ScopedSession = scoped_session(sessionmaker(bind=engine))
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 NORMAL_USER_EMAIL = "normal@normal.com"
 NORMAL_USER_PW = "my_password"
+ROOM_USER_EMAIL = "normal@room1.com"
+ROOM_USER_PW = "my_password"
 
 
 @pytest.fixture(scope="module")
@@ -40,11 +39,28 @@ def object_storage() -> Generator:
 
 
 @pytest.fixture(scope="module")
-def db() -> Generator:
-    base.Base.metadata.create_all(bind=engine)
-    yield ScopedSession()
-    ScopedSession().close()
-    base.Base.metadata.drop_all(bind=engine)
+def engine() -> Generator:
+    engine = create_engine(
+        settings.SQLALCHEMY_DATABASE_TEST_URI, pool_pre_ping=True, pool_size=20
+    )
+    base.Base.metadata.create_all(engine)  # type: ignore
+
+    yield engine
+
+    base.Base.metadata.drop_all(engine)  # type: ignore
+
+
+@pytest.fixture(scope="module")
+def db(engine) -> Generator:
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    session: Session = SessionLocal()
+    yield session
+    close_all_sessions()
+
+
+@pytest.fixture(scope="module")
+def oso(db) -> Oso:
+    return init_oso(db)
 
 
 @pytest.fixture(scope="module")
@@ -67,7 +83,13 @@ def client(db) -> Generator:
 
 
 @pytest.fixture(scope="module")
-def admin_user(db: Session) -> Dict[str, str]:
+def data(db) -> Data:
+    data = load_role_fixtures(db)
+    return data
+
+
+@pytest.fixture(scope="module")
+def admin_user(db: Session) -> User:
     email = "admin@admin.com"
     password = "super_admin"
     user_in = UserCreate(email=email, password=password, is_superuser=True)
@@ -75,13 +97,40 @@ def admin_user(db: Session) -> Dict[str, str]:
 
 
 @pytest.fixture(scope="module")
-def team(db: Session, admin_user: User) -> Team:
-    team_in = TeamCreate(name="random_team", is_active=True, created_by=admin_user.id)
-    return crud.team.create(db, obj_in=team_in)
+def organization(db: Session) -> Organization:
+    org_in = OrgCreate(name="My Org", is_active=True)
+    return crud.org.create(db, obj_in=org_in)
 
 
 @pytest.fixture(scope="module")
-def normal_user(db: Session) -> Dict[str, str]:
+def org_admin(db: Session, admin_user: User, organization: Organization) -> User:
+    oso_roles.add_user_role(db, admin_user, organization, "ADMIN", commit=True)
+    return admin_user
+
+
+@pytest.fixture(scope="module")
+def org_lead(db: Session, normal_user: User, organization: Organization) -> User:
+    oso_roles.add_user_role(db, normal_user, organization, "LEAD", commit=True)
+    return normal_user
+
+
+@pytest.fixture(scope="module")
+def team(db: Session, admin_user: User, organization: Organization) -> Team:
+    new_team = Team(
+        name="Fake Name",
+        description="this is a test team",
+        is_active=True,
+        creator=admin_user,
+        organization=organization,
+    )
+    db.add(new_team)
+    db.commit()
+    db.refresh(new_team)
+    return new_team
+
+
+@pytest.fixture(scope="module")
+def normal_user(db: Session) -> User:
     email = NORMAL_USER_EMAIL
     password = NORMAL_USER_PW
     user_in = UserCreate(
@@ -91,9 +140,21 @@ def normal_user(db: Session) -> Dict[str, str]:
 
 
 @pytest.fixture(scope="module")
-def dataroom(db: Session, team: Team, normal_user: User) -> Dataroom:
+def room_user(db: Session, dataroom: Dataroom) -> User:
+    email = ROOM_USER_EMAIL
+    password = ROOM_USER_PW
+    user_in = UserCreate(
+        email=email, password=password, is_superuser=False, is_active=True
+    )
+    user = crud.user.create(db, obj_in=user_in)
+    oso_roles.add_user_role(db, user, dataroom, "MEMBER", commit=True)
+    return user
+
+
+@pytest.fixture(scope="module")
+def dataroom(db: Session, organization: Organization, normal_user: User) -> Dataroom:
     dataroom_in = DataRoomCreate(
-        name="Test Room", created_by=normal_user.id, team_fk=team.id
+        name="Test Room", creator=normal_user, organization=organization
     )
     return crud.dataroom.create(db, obj_in=dataroom_in)
 
@@ -107,8 +168,8 @@ def document(db: Session, dataroom: Dataroom, normal_user: User) -> Document:
         mime_type="text/plain",
         md5_sum="87a6909ab71ec463f013325dbf9f3545",
         size=466730,
-        dataroom_fk=dataroom.id,
-        created_by=normal_user.id,
+        dataroom=dataroom,
+        creator=normal_user,
     )
     return crud.document.create(db, obj_in=obj_in)
 
@@ -132,6 +193,19 @@ def user_authentication_headers(
     *, client: TestClient, normal_user: User
 ) -> Dict[str, str]:
     data = {"username": normal_user.email, "password": NORMAL_USER_PW}
+
+    r = client.post(f"{settings.API_V1_STR}/login/access-token", data=data)
+    response = r.json()
+    auth_token = response["access_token"]
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    return headers
+
+
+@pytest.fixture(scope="module")
+def room_user_authentication_headers(
+    *, client: TestClient, room_user: User
+) -> Dict[str, str]:
+    data = {"username": room_user.email, "password": ROOM_USER_PW}
 
     r = client.post(f"{settings.API_V1_STR}/login/access-token", data=data)
     response = r.json()

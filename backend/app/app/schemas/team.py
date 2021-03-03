@@ -1,7 +1,8 @@
 from uuid import UUID
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
+from app.models import User, Organization
 
 
 # Shared properties
@@ -18,7 +19,11 @@ class TeamCreateRequest(BaseModel):
 
 class TeamCreate(TeamCreateRequest):
     is_active: bool
-    created_by: UUID
+    creator: User
+    organization: Organization
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class TeamUpdate(TeamBase):

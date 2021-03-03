@@ -1,14 +1,13 @@
 from typing import Optional, Dict
 from uuid import UUID
 from pydantic import BaseModel
+from app.models import User, Dataroom
 
 
 class DocumentBase(BaseModel):
     name: str
     description: Optional[str] = None
     file_name: str
-    dataroom_fk: Optional[UUID] = None
-    created_by: Optional[UUID] = None
 
 
 class DocumentCreateRequest(DocumentBase):
@@ -22,6 +21,11 @@ class DocumentCreateRequest(DocumentBase):
 class DocumentCreate(DocumentCreateRequest):
     file_name: str
     extension: str
+    dataroom: Optional[Dataroom]
+    creator: Optional[User]
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class DocumentUpdate(DocumentBase):

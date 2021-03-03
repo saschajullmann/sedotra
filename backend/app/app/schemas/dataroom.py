@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.models import User, Organization
+
 
 class DataRoomBase(BaseModel):
     name: Optional[str] = None
@@ -14,8 +16,11 @@ class DataRoomCreateRequest(DataRoomBase):
 
 
 class DataRoomCreate(DataRoomCreateRequest):
-    created_by: UUID
-    team_fk: UUID
+    creator: User
+    organization: Organization
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class DataRoomUpdate(DataRoomBase):

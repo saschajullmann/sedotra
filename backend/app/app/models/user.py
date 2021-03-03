@@ -1,8 +1,6 @@
 from sqlalchemy import Boolean, Column, String
-from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
-from app.models.team_user import association_table
 
 
 class User(Base):
@@ -13,4 +11,11 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
-    teams = relationship("Team", secondary=association_table)
+
+    def __init__(
+        self, first_name: str, last_name: str, email: str, hashed_password: str
+    ):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.hashed_password = hashed_password

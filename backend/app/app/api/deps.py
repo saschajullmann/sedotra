@@ -1,5 +1,6 @@
-from typing import Generator, Any
+from typing import Generator
 
+from oso import Oso
 from fastapi import Depends, HTTPException, status
 from pydantic import ValidationError
 from fastapi.security import OAuth2PasswordBearer
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
+from app.authorization.oso import init_oso
 from app.db.session import SessionLocal
 from app.object_storage import ObjectStorage
 
@@ -29,6 +31,13 @@ def get_object_client() -> Generator:
     try:
         client = ObjectStorage()
         yield client
+    finally:
+        pass
+
+
+def get_oso(db: Session = Depends(get_db)) -> Oso:
+    try:
+        return init_oso(db)
     finally:
         pass
 

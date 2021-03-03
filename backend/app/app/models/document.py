@@ -1,8 +1,11 @@
+from uuid import UUID as PyUUID
 from sqlalchemy import Boolean, Column, String, ForeignKey, BigInteger, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base_class import Base
+from .user import User
+from .dataroom import Dataroom
 
 
 """
@@ -45,6 +48,28 @@ class Document(Base):
             name="_file_per_dataroom",
         ),
     )
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        file_name: str,
+        extension: str,
+        md5_sum: PyUUID,
+        mime_type: str,
+        size: int,
+        creator: User,
+        dataroom: Dataroom,
+    ):
+        self.name = name
+        self.description = description
+        self.file_name = file_name
+        self.extension = extension
+        self.md5_sum = md5_sum
+        self.mime_type = mime_type
+        self.size = size
+        self.creator = creator
+        self.dataroom = dataroom
 
     @property
     def md5(self) -> str:
