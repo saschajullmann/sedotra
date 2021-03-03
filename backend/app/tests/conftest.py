@@ -23,6 +23,8 @@ from .fixtures.role_data import load_role_fixtures, Data
 
 NORMAL_USER_EMAIL = "normal@normal.com"
 NORMAL_USER_PW = "my_password"
+ROOM_USER_EMAIL = "normal@room1.com"
+ROOM_USER_PW = "my_password"
 
 
 @pytest.fixture(scope="module")
@@ -138,6 +140,18 @@ def normal_user(db: Session) -> User:
 
 
 @pytest.fixture(scope="module")
+def room_user(db: Session, dataroom: Dataroom) -> User:
+    email = ROOM_USER_EMAIL
+    password = ROOM_USER_PW
+    user_in = UserCreate(
+        email=email, password=password, is_superuser=False, is_active=True
+    )
+    user = crud.user.create(db, obj_in=user_in)
+    oso_roles.add_user_role(db, user, dataroom, "MEMBER", commit=True)
+    return user
+
+
+@pytest.fixture(scope="module")
 def dataroom(db: Session, organization: Organization, normal_user: User) -> Dataroom:
     dataroom_in = DataRoomCreate(
         name="Test Room", creator=normal_user, organization=organization
@@ -179,6 +193,19 @@ def user_authentication_headers(
     *, client: TestClient, normal_user: User
 ) -> Dict[str, str]:
     data = {"username": normal_user.email, "password": NORMAL_USER_PW}
+
+    r = client.post(f"{settings.API_V1_STR}/login/access-token", data=data)
+    response = r.json()
+    auth_token = response["access_token"]
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    return headers
+
+
+@pytest.fixture(scope="module")
+def room_user_authentication_headers(
+    *, client: TestClient, room_user: User
+) -> Dict[str, str]:
+    data = {"username": room_user.email, "password": ROOM_USER_PW}
 
     r = client.post(f"{settings.API_V1_STR}/login/access-token", data=data)
     response = r.json()
