@@ -415,7 +415,7 @@ python-versions = "*"
 
 [[package]]
 name = "oso"
-version = "0.11.0"
+version = "0.11.1"
 description = "oso is an open source policy engine for authorization that’s embedded in your application"
 category = "main"
 optional = false
@@ -740,7 +740,7 @@ pymysql = ["pymysql (<1)", "pymysql"]
 
 [[package]]
 name = "sqlalchemy-oso"
-version = "0.5.0"
+version = "0.5.1"
 description = "oso sqlalchemy integration"
 category = "main"
 optional = false
@@ -1127,22 +1127,22 @@ mypy-extensions = [
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
 oso = [
-    {file = "oso-0.11.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:a2ce86ba99b14a082197536e87af377e1d6404d7dc173de0b4fdaa5117e9e8de"},
-    {file = "oso-0.11.0-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:e4ec525fae2862e1f3206ba57b064b6e48dc896d6dfa7f466a426532813d60ab"},
-    {file = "oso-0.11.0-cp36-cp36m-win_amd64.whl", hash = "sha256:4ae695528493b595ac4ae7bc8794b414854e1d8433f502ccce9a463e39dd4469"},
-    {file = "oso-0.11.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:6fb1fb63e6cf121b6af9679d5de96ce6b91ddadd635ae735d8e6d9f35e116327"},
-    {file = "oso-0.11.0-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:26e3629b7601a3abf44f5fd3f7af8ec1d32589850f731e984956458b28e2fe9c"},
-    {file = "oso-0.11.0-cp37-cp37m-win_amd64.whl", hash = "sha256:f6486bdcd38240f1d49c0b1183bc0a33de883068d101ad9ee9cabf8f8843e308"},
-    {file = "oso-0.11.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:437d94992dfe366da0515bbdd775681b5b239d81b1a9c41f7374ad0d10133659"},
-    {file = "oso-0.11.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:9bfb5478601def83729116f29711817e7ed44984f4c51cbe1e4eae94c0a178bd"},
-    {file = "oso-0.11.0-cp38-cp38-win_amd64.whl", hash = "sha256:ea6690dd2af600c79b8a9200dff110675213ce9a558b81ab246f46c49c13ca61"},
-    {file = "oso-0.11.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:428a1a65a7a835307a421ea8ef1847ef07a2493524a5b747fd226a7abef1133a"},
-    {file = "oso-0.11.0-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:1fe4c37cf48a5cbebb069e198a7a95c045a5624cfd2a491508a4214ca53e6c65"},
-    {file = "oso-0.11.0-cp39-cp39-win_amd64.whl", hash = "sha256:1a2170ef1a55545a6c5418d8acb0b66197383207d2236c6761d968d6f759a8e4"},
-    {file = "oso-0.11.0-pp36-pypy36_pp73-macosx_10_9_x86_64.whl", hash = "sha256:7a89d20a83ee58ded89219105c07968d644b33bbae507b0693fde5ec6fd7dc4f"},
-    {file = "oso-0.11.0-pp36-pypy36_pp73-manylinux2010_x86_64.whl", hash = "sha256:a0a6ca2eb5567ce38e9d9f9d5d0ad4bd3aab4f756d8f066f1e9e41a6af9c195e"},
-    {file = "oso-0.11.0-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:ee5b6bfc992fb1e6447dc19c6d75a8142f25f70b285a5a1572e63b4958e5cf21"},
-    {file = "oso-0.11.0-pp37-pypy37_pp73-manylinux2010_x86_64.whl", hash = "sha256:5c45e25e0e51ef138c64c2a1a06c15edfc0c03a3568607ba313b6fde59f4eb2e"},
+    {file = "oso-0.11.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:e6f1281b376f083fea0f38e6e4d8dd34ada82a49c56ed3c13354973a6006a194"},
+    {file = "oso-0.11.1-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:f96ad2acbbb185c2af7de6c12fd9634551ff946fc378c56c40ac358ae11b2043"},
+    {file = "oso-0.11.1-cp36-cp36m-win_amd64.whl", hash = "sha256:249ada821e6ce49b1cc2c5827bb00d0d37f913eba8442c5ceb19ccd9a2b7d650"},
+    {file = "oso-0.11.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:afabfb0ff833d36ae98ae8891689b14adc8c6e44b139839a79b0895f2e226e64"},
+    {file = "oso-0.11.1-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:505533ec8557aec926e4a97d80ff3090ca238a5345773457db962f9ae382f5ec"},
+    {file = "oso-0.11.1-cp37-cp37m-win_amd64.whl", hash = "sha256:79e581bbac093321a9ed79c2b0419047fa1cd4067b000ef8298b3b6872f4280e"},
+    {file = "oso-0.11.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:bf840fb99e24b926d166afd1a7644562ec65b9dc2a2c76dd4c9dd7ac0298a884"},
+    {file = "oso-0.11.1-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:bfca7ed2acbba272a83132a3911c467403a5d32f9af5aff7dc582528dfb2b7fc"},
+    {file = "oso-0.11.1-cp38-cp38-win_amd64.whl", hash = "sha256:ea6a1d476eac9d32dfc50313bb474ae1fd42dd4669c41b1ca918827dae2eac54"},
+    {file = "oso-0.11.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:614a570bbca961a51e448f0f58065fdaef0269433eeec3b584d80e5b81b99c6e"},
+    {file = "oso-0.11.1-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:0c4f7e3b0773e5fdfdf9b2010fd611cd1db07a989f4f2c5767b52641a65b6bad"},
+    {file = "oso-0.11.1-cp39-cp39-win_amd64.whl", hash = "sha256:553d5bbaac68666cc730b200445ba27705c98b354d310bd2ed63718e127e8394"},
+    {file = "oso-0.11.1-pp36-pypy36_pp73-macosx_10_9_x86_64.whl", hash = "sha256:3bb3c8ea47988a7f4eafd00527eb5edae0455beb854f6b316d28613dbf5d8abd"},
+    {file = "oso-0.11.1-pp36-pypy36_pp73-manylinux2010_x86_64.whl", hash = "sha256:667163a0b50607271dfdf8221876ac12cd377bd9309fe6fb8c9da4efa9546b33"},
+    {file = "oso-0.11.1-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:0029ab4eff5931487b6fdd916504554c462ba6b3a596ccd734dce438a83add95"},
+    {file = "oso-0.11.1-pp37-pypy37_pp73-manylinux2010_x86_64.whl", hash = "sha256:0e17601eb8889f3e364dce913c253cc07d9faa13e8bf3bb962543d5ce0a09fe4"},
 ]
 packaging = [
     {file = "packaging-20.4-py2.py3-none-any.whl", hash = "sha256:998416ba6962ae7fbd6596850b80e17859a5753ba17c32284f67bfff33784181"},
@@ -1399,7 +1399,7 @@ sqlalchemy = [
     {file = "SQLAlchemy-1.3.23.tar.gz", hash = "sha256:6fca33672578666f657c131552c4ef8979c1606e494f78cd5199742dfb26918b"},
 ]
 sqlalchemy-oso = [
-    {file = "sqlalchemy_oso-0.5.0-py3-none-any.whl", hash = "sha256:efbae3a6ac21ff57d71adcf81a9b436826d18facea18a5d6c4054930fee8df1b"},
+    {file = "sqlalchemy_oso-0.5.1-py3-none-any.whl", hash = "sha256:1b75ee5cdd1778b281e5073ffc6b68414bff43544fb108e4305cbf7a8b593691"},
 ]
 starlette = [
     {file = "starlette-0.13.6-py3-none-any.whl", hash = "sha256:bd2ffe5e37fb75d014728511f8e68ebf2c80b0fa3d04ca1479f4dc752ae31ac9"},
