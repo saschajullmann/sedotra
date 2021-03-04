@@ -1,11 +1,9 @@
+import pytest
 from typing import List
 from uuid import UUID
 from oso import Oso
-from app.models import (
-    Team,
-    OrganizationRole,
-    Dataroom,
-)
+from app.models import Team, OrganizationRole, Dataroom, Organization
+from app.crud.crud_roles import RoleBase, RoleNameNotExistsError
 from sqlalchemy.orm import Session
 from app.models.document import Document
 from sqlalchemy_oso import roles as oso_roles
@@ -271,3 +269,57 @@ def test_team_dataroom_roles(db: Session, data: Data, oso: Oso):
     assert (
         oso.is_allowed(data.member_team_1, "CREATE", new_document_team_member_1) is True
     )
+
+
+def test_get_roles():
+    room_roles = RoleBase(Dataroom)
+    team_roles = RoleBase(Team)
+    org_roles = RoleBase(Organization)
+
+    expected_room_roles = ["OWNER", "ADMIN", "MEMBER", "GUEST_WRITE", "GUEST_READ"]
+    possible_room_roles = room_roles.possible_roles()
+
+    assert expected_room_roles == possible_room_roles
+
+    expected_team_roles = ["OWNER", "ADMIN", "MEMBER"]
+    possible_team_roles = team_roles.possible_roles()
+
+    assert expected_team_roles == possible_team_roles
+
+    expected_org_roles = ["ADMIN", "LEAD", "MEMBER"]
+    possible_org_roles = org_roles.possible_roles()
+
+    assert expected_org_roles == possible_org_roles
+
+
+def add_roles(db: Session, data: Data):
+    room_roles = RoleBase(Dataroom)
+    user = data.member_team_1
+    room = data.room_1
+
+    wrong_role_name = "GUEST"
+
+    with pytest.raises(RoleNameNotExistsError):
+        room_roles.add_user_role(db, user, room, wrong_role_name)
+
+    user_roles_in_room_1: List = room_roles.get_user_roles(db, user, room)
+
+    # user does not have any roles in room_1
+    count_of_roles = len(user_roles_in_room_1)
+    assert count_of_roles == 0
+
+    # now add role
+    room_roles.add_user_role(db, user, room, "ADMIN")
+
+    user_roles_in_room_1: List = room_roles.get_user_roles(db, user, room)
+    # user does not have any roles in room_1
+    count_of_roles = len(user_roles_in_room_1)
+    assert count_of_roles == 1
+
+    assert user_roles_in_room_1[0].name == "ADMIN"
+
+    # now remove the added role
+    room_roles.remove_user_role(db, user, room, "ADMIN")
+
+    user_roles_in_room_1: List = room_roles.get_user_roles(db, user, room)
+    assert count_of_roles == 0
