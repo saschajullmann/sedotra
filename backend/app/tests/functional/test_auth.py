@@ -32,6 +32,17 @@ def test_org_roles(db: Session, data: Data, oso: Oso):
     )
     assert oso.is_allowed(data.admin_user_org_1, "LIST_TEAMS", data.second_org) is False
 
+    # Any type of org role can list all the rooms in the specific org
+    assert oso.is_allowed(data.member_user_org_1, "LIST_ROOMS", data.first_org) is True
+    assert oso.is_allowed(data.admin_user_org_1, "LIST_ROOMS", data.first_org) is True
+    assert oso.is_allowed(data.lead_user_org_1, "LIST_ROOMS", data.first_org) is True
+
+    assert oso.is_allowed(data.lead_user_org_1, "LIST_ROOMS", data.second_org) is False
+    assert (
+        oso.is_allowed(data.member_user_org_1, "LIST_ROOMS", data.second_org) is False
+    )
+    assert oso.is_allowed(data.admin_user_org_1, "LIST_ROOMS", data.second_org) is False
+
     # Only admin user can edit the org
     assert oso.is_allowed(data.admin_user_org_1, "UPDATE", data.first_org) is True
     assert oso.is_allowed(data.member_user_org_1, "UPDATE", data.first_org) is False

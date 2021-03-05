@@ -1,8 +1,9 @@
-from typing import Any
+from typing import Any, List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from oso import Oso
 
 from app import crud, models, schemas
 from app.api import deps
@@ -15,6 +16,27 @@ from app.utils import (
 router = APIRouter()
 
 
+@router.get("/{org_id}/datarooms", response_model=List[schemas.DataRoomInDBBase])
+def get_datarooms(
+    org_id: UUID,
+    db: Session = Depends(deps.get_db),
+    auth: Oso = Depends(deps.get_oso),
+    user: models.User = Depends(deps.get_current_active_user),
+):
+    org = crud.org.get(db, org_id)
+
+    if org is None:
+        raise HTTPException(status_code=404)
+
+    # first find out if the user is allowed to list rooms in a given org
+    if not auth.is_allowed(user, "LIST_ROOMS", org):
+        raise HTTPException(status_code=400, detail="Not enough privileges")
+
+    rooms = crud.dataroom.get_multi_by_org(db, org)
+
+    return rooms
+
+
 @router.post(
     "/{org_id}/datarooms/{dataroom_id}/documents",
     response_model=schemas.DocumentResponse,
@@ -25,6 +47,7 @@ def create_document(
     document_request: schemas.DocumentCreateRequest,
     db: Session = Depends(deps.get_db),
     client: ObjectStorage = Depends(deps.get_object_client),
+    auth: Oso = Depends(deps.get_oso),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """

@@ -1,6 +1,7 @@
 ### Permissions to all org roles
 role_allow(_role: OrganizationRole, "READ", _org: Organization);
 role_allow(_role: OrganizationRole, "LIST_TEAMS", _org: Organization);
+role_allow(_role: OrganizationRole, "LIST_ROOMS", _org: Organization);
 
 ### Admin permissions
 role_allow(_role: OrganizationRole{name: "ADMIN"}, "LIST_ROLES", _org: Organization);
